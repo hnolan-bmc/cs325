@@ -12,6 +12,7 @@ for line in trump:
     line = line.lower()
     #remove all links
     line = re.sub(r'https?:\/\/[^\s]*[\b\s]+', '', line)
+    line = re.sub(r'pic\.twitter\.com[^\s]*[\b\s]+', '', line)
     #remove coninuation
     line = line.replace('(cont)', '')
     words = nltk.word_tokenize(line)
@@ -55,6 +56,7 @@ for line in biden:
     line = line.lower()
     #remove all links
     line = re.sub(r'https?:\/\/[^\s]*[\b\s]+', '', line)
+    line = re.sub(r'pic\.twitter\.com[^\s]*[\b\s]+', '', line)
     #remove coninuation
     line = line.replace('(cont)', '')
     words = nltk.word_tokenize(line)

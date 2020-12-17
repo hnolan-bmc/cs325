@@ -1,6 +1,7 @@
 import nltk
 import string
 import re
+from collections import Counter
 
 #Tweet List
 tweets = []
@@ -48,7 +49,11 @@ for line in trump:
             else:
                 words[words.index(word)] = noPunc
     if len(line) > 0:
-        tweets.append((line, 'Trump'))
+        #pos tagger is run to attach part-of-speech tag to each word
+        tagged = nltk.pos_tag(words)
+        #counts is a list of all frequencies of pos in the line
+        counts = (Counter(tag for word,tag in tagged)).most_common()
+        tweets.append((line, 'Trump', counts))
 
 #Get Biden Tweets
 biden = open("JoeBidenTweets.csv", "r")
@@ -93,5 +98,10 @@ for line in biden:
             else:
                 words[words.index(word)] = noPunc
     if len(line) > 0:
-        tweets.append((line, 'Biden'))
-print(tweets)
+        #pos tagger is run to attach part-of-speech tag to each word
+        tagged = nltk.pos_tag(words)
+        #counts is a list of all frequencies of pos in the line
+        counts = (Counter(tag for word,tag in tagged)).most_common()
+        tweets.append((line, 'Biden', counts))
+print(tweets[0])
+print(tweets[len(tweets) - 1])

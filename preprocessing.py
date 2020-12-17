@@ -11,7 +11,7 @@ trump = open('realdonaldtrump.csv', 'r')
 for line in trump:
     line = line.lower()
     #remove all links
-    line = re.sub(r'https?:\/\/[^\s]*[\b\s]+', '', line)
+    line = re.sub(r'https?:\/\/[^\s]*([\b\s]+|$)', '', line)
     line = re.sub(r'pic\.twitter\.com[^\s]*[\b\s]+', '', line)
     #remove coninuation
     line = line.replace('(cont)', '')
@@ -47,7 +47,8 @@ for line in trump:
                 break
             else:
                 words[words.index(word)] = noPunc
-    tweets.append((line, 'Trump'))
+    if len(line) > 0:
+        tweets.append((line, 'Trump'))
 
 #Get Biden Tweets
 biden = open("JoeBidenTweets.csv", "r")
@@ -55,8 +56,8 @@ biden = open("JoeBidenTweets.csv", "r")
 for line in biden:
     line = line.lower()
     #remove all links
-    line = re.sub(r'https?:\/\/[^\s]*[\b\s]+', '', line)
-    line = re.sub(r'pic\.twitter\.com[^\s]*[\b\s]+', '', line)
+    line = re.sub(r'https?:\/\/[^\s]*([\b\s]+|$)', '', line)
+    line = re.sub(r'pic\.twitter\.com[^\s]*[\b\s]', '', line)
     #remove coninuation
     line = line.replace('(cont)', '')
     words = nltk.word_tokenize(line)
@@ -91,4 +92,6 @@ for line in biden:
                 break
             else:
                 words[words.index(word)] = noPunc
-    tweets.append((line, 'Biden'))
+    if len(line) > 0:
+        tweets.append((line, 'Biden'))
+print(tweets)

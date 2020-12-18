@@ -39,58 +39,6 @@ def convert_pos(counts):
 #Tweet List
 tweets = []
 
-#Get Trump Tweets
-trump = open('realdonaldtrump.csv', 'r')
-
-for line in trump:
-    line = line.lower()
-    #remove all links
-    line = re.sub(r'https?:\/\/[^\s]*([\b\s]+|$)', '', line)
-    line = re.sub(r'pic\.twitter\.com[^\s]*[\b\s]+', '', line)
-    #remove coninuation
-    line = line.replace('(cont)', '')
-    words = nltk.word_tokenize(line)
-    mention = False
-    hashtag = False
-    for word in list(words):
-        #if it's a mention, we add the @ so we know
-        if mention:
-            words[words.index(word)] = '@' + word
-            mention = False
-        #if it's a hashtag, we remove it
-        elif hashtag:
-            words.remove(word)
-            hashtag = False
-        #check if the next word in the list is a mention
-        elif word[0] == '@':
-            mention = True
-            words.remove(word)
-        #check if the next word in the list is a hastag
-        elif word[0] == '#':
-            hashtag = True
-            words.remove(word)
-        #convert & to and
-        elif word == '&':
-            words[words.index(word)] = 'and'
-        #remove any other punctuation unless it's a contraction
-        else:
-            noPunc = word.strip(string.punctuation)
-            if noPunc == '':
-                words.remove(word)
-            elif noPunc == 's' or noPunc == 'm' or noPunc == 're' or noPunc == 've' or noPunc == 'd' or noPunc =='ll':
-                break
-            else:
-                words[words.index(word)] = noPunc
-    if len(line) > 0:
-        #pos tagger is run to attach part-of-speech tag to each word
-        tagged = nltk.pos_tag(words)
-        #counts is a list of all frequencies of pos in the line
-        counts = (Counter(tag for word,tag in tagged)).most_common()
-        count_dict = pos_dict
-        for count in counts:
-            count_dict[count[0]] = count[1]
-        tweets.append((line, 1, convert_pos(count_dict)))
-
 #Get Biden Tweets
 biden = open("JoeBidenTweets.csv", "r")
 
@@ -143,6 +91,64 @@ for line in biden:
             count_dict[count[0]] = count[1]
         tweets.append((line, 0, convert_pos(count_dict)))
 
+num_biden = len(tweets)
+num_trump = 0
+
+#Get Trump Tweets
+trump = open('realdonaldtrump.csv', 'r')
+
+for line in trump:
+    line = line.lower()
+    #remove all links
+    line = re.sub(r'https?:\/\/[^\s]*([\b\s]+|$)', '', line)
+    line = re.sub(r'pic\.twitter\.com[^\s]*[\b\s]+', '', line)
+    #remove coninuation
+    line = line.replace('(cont)', '')
+    words = nltk.word_tokenize(line)
+    mention = False
+    hashtag = False
+    for word in list(words):
+        #if it's a mention, we add the @ so we know
+        if mention:
+            words[words.index(word)] = '@' + word
+            mention = False
+        #if it's a hashtag, we remove it
+        elif hashtag:
+            words.remove(word)
+            hashtag = False
+        #check if the next word in the list is a mention
+        elif word[0] == '@':
+            mention = True
+            words.remove(word)
+        #check if the next word in the list is a hastag
+        elif word[0] == '#':
+            hashtag = True
+            words.remove(word)
+        #convert & to and
+        elif word == '&':
+            words[words.index(word)] = 'and'
+        #remove any other punctuation unless it's a contraction
+        else:
+            noPunc = word.strip(string.punctuation)
+            if noPunc == '':
+                words.remove(word)
+            elif noPunc == 's' or noPunc == 'm' or noPunc == 're' or noPunc == 've' or noPunc == 'd' or noPunc =='ll':
+                break
+            else:
+                words[words.index(word)] = noPunc
+    if len(line) > 0:
+        #pos tagger is run to attach part-of-speech tag to each word
+        tagged = nltk.pos_tag(words)
+        #counts is a list of all frequencies of pos in the line
+        counts = (Counter(tag for word,tag in tagged)).most_common()
+        count_dict = pos_dict
+        for count in counts:
+            count_dict[count[0]] = count[1]
+        tweets.append((line, 1, convert_pos(count_dict)))
+    num_trump += 1
+    if num_trump >= num_biden:
+        break
+
 #Input Setup
 random.seed(datetime.now())
 random.shuffle(tweets, ) #mix them up
@@ -166,7 +172,7 @@ x_test = np.array(x_test)
 y_test = np.array(y_test)
 
 #Model Creation
-epochs = 50
+epochs = 15
 
 model = Sequential()
 model.add(Dense(1, activation='sigmoid'))

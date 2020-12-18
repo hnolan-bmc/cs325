@@ -14,6 +14,7 @@ from keras.preprocessing import sequence
 from keras.models import Sequential
 from keras.optimizers import SGD
 from keras.layers import Dense, Embedding, Flatten, Dropout, LSTM
+from datetime import datetime
 
 pos_dict = {'$': 0, 'CC': 0, 'CD': 0, 'DT': 0, 'EX': 0, 'FW': 0, 'IN': 0,
             'JJ': 0, 'JJR': 0, 'JJS': 0, 'LS': 0, 'MD': 0, 'NN': 0,
@@ -37,58 +38,6 @@ def convert_pos(counts):
 
 #Tweet List
 tweets = []
-
-#Get Trump Tweets
-trump = open('realdonaldtrump.csv', 'r')
-
-for line in trump:
-    line = line.lower()
-    #remove all links
-    line = re.sub(r'https?:\/\/[^\s]*([\b\s]+|$)', '', line)
-    line = re.sub(r'pic\.twitter\.com[^\s]*[\b\s]+', '', line)
-    #remove coninuation
-    line = line.replace('(cont)', '')
-    words = nltk.word_tokenize(line)
-    mention = False
-    hashtag = False
-    for word in list(words):
-        #if it's a mention, we add the @ so we know
-        if mention:
-            words[words.index(word)] = '@' + word
-            mention = False
-        #if it's a hashtag, we remove it
-        elif hashtag:
-            words.remove(word)
-            hashtag = False
-        #check if the next word in the list is a mention
-        elif word[0] == '@':
-            mention = True
-            words.remove(word)
-        #check if the next word in the list is a hastag
-        elif word[0] == '#':
-            hashtag = True
-            words.remove(word)
-        #convert & to and
-        elif word == '&':
-            words[words.index(word)] = 'and'
-        #remove any other punctuation unless it's a contraction
-        else:
-            noPunc = word.strip(string.punctuation)
-            if noPunc == '':
-                words.remove(word)
-            elif noPunc == 's' or noPunc == 'm' or noPunc == 're' or noPunc == 've' or noPunc == 'd' or noPunc =='ll':
-                break
-            else:
-                words[words.index(word)] = noPunc
-    if len(line) > 0:
-        #pos tagger is run to attach part-of-speech tag to each word
-        tagged = nltk.pos_tag(words)
-        #counts is a list of all frequencies of pos in the line
-        counts = (Counter(tag for word,tag in tagged)).most_common()
-        count_dict = pos_dict
-        for count in counts:
-            count_dict[count[0]] = count[1]
-        tweets.append((line, 1, convert_pos(count_dict)))
 
 #Get Biden Tweets
 biden = open("JoeBidenTweets.csv", "r")
@@ -142,22 +91,81 @@ for line in biden:
             count_dict[count[0]] = count[1]
         tweets.append((line, 0, convert_pos(count_dict)))
 
+num_biden = len(tweets)
+num_trump = 0
+
+#Get Trump Tweets
+trump = open('realdonaldtrump.csv', 'r')
+
+for line in trump:
+    line = line.lower()
+    #remove all links
+    line = re.sub(r'https?:\/\/[^\s]*([\b\s]+|$)', '', line)
+    line = re.sub(r'pic\.twitter\.com[^\s]*[\b\s]+', '', line)
+    #remove coninuation
+    line = line.replace('(cont)', '')
+    words = nltk.word_tokenize(line)
+    mention = False
+    hashtag = False
+    for word in list(words):
+        #if it's a mention, we add the @ so we know
+        if mention:
+            words[words.index(word)] = '@' + word
+            mention = False
+        #if it's a hashtag, we remove it
+        elif hashtag:
+            words.remove(word)
+            hashtag = False
+        #check if the next word in the list is a mention
+        elif word[0] == '@':
+            mention = True
+            words.remove(word)
+        #check if the next word in the list is a hastag
+        elif word[0] == '#':
+            hashtag = True
+            words.remove(word)
+        #convert & to and
+        elif word == '&':
+            words[words.index(word)] = 'and'
+        #remove any other punctuation unless it's a contraction
+        else:
+            noPunc = word.strip(string.punctuation)
+            if noPunc == '':
+                words.remove(word)
+            elif noPunc == 's' or noPunc == 'm' or noPunc == 're' or noPunc == 've' or noPunc == 'd' or noPunc =='ll':
+                break
+            else:
+                words[words.index(word)] = noPunc
+    if len(line) > 0:
+        #pos tagger is run to attach part-of-speech tag to each word
+        tagged = nltk.pos_tag(words)
+        #counts is a list of all frequencies of pos in the line
+        counts = (Counter(tag for word,tag in tagged)).most_common()
+        count_dict = pos_dict
+        for count in counts:
+            count_dict[count[0]] = count[1]
+        tweets.append((line, 1, convert_pos(count_dict)))
+    num_trump += 1
+    if num_trump >= num_biden:
+        break
+
 #Input Setup
-random.shuffle(tweets) #mix them up
-midpoint = (int)(len(tweets)/2)
+random.seed(datetime.now())
+random.shuffle(tweets, ) #mix them up
+split = (int)(round((len(tweets)*0.7)))
 x_train = []
 y_train = []
 x_test = []
 y_test = []
 
 for i in range(len(tweets)):
-    if i < midpoint:
+    if i < split:
         x_train.append(tweets[i][2])
         y_train.append(tweets[i][1])
     else:
         x_test.append(tweets[i][2])
         y_test.append(tweets[i][1])
-        
+
 x_train = np.array(x_train)
 y_train = np.array(y_train)
 x_test = np.array(x_test)
@@ -167,11 +175,24 @@ y_test = np.array(y_test)
 epochs = 30
 
 model = Sequential()
-model.add(Dense(5, activation='sigmoid'))
-model.add(Dense(4, activation='sigmoid'))
-model.add(Dense(3, activation='sigmoid'))
-model.add(Dense(2, activation='sigmoid'))
-model.add(Dense(1, activation='sigmoid'))
+for x in range(5, 0, -1):
+    model.add(Dense(x, activation='sigmoid'))
+
+# for x in range(10, 0, -1):
+#     model.add(Dense(1, activation='sigmoid'))
+
+# for x in range (10, 0, -1):
+#     model.add(Dense(x, activation='sigmoid'))
+#
+# for x in range (20, 0, -1):
+#     model.add(Dense(x, activation='sigmoid'))
+
+
+# model.add(Dense(5, activation='sigmoid'))
+# model.add(Dense(4, activation='sigmoid'))
+# model.add(Dense(3, activation='sigmoid'))
+# model.add(Dense(2, activation='sigmoid'))
+# model.add(Dense(1, activation='sigmoid'))
 
 
 history = model.compile(loss='binary_crossentropy',

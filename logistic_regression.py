@@ -144,20 +144,20 @@ for line in biden:
 
 #Input Setup
 random.shuffle(tweets) #mix them up
-midpoint = (int)(len(tweets)/2)
+split = (int)(round((len(tweets)*0.7)))
 x_train = []
 y_train = []
 x_test = []
 y_test = []
 
 for i in range(len(tweets)):
-    if i < midpoint:
+    if i < split:
         x_train.append(tweets[i][2])
         y_train.append(tweets[i][1])
     else:
         x_test.append(tweets[i][2])
         y_test.append(tweets[i][1])
-        
+
 x_train = np.array(x_train)
 y_train = np.array(y_train)
 x_test = np.array(x_test)

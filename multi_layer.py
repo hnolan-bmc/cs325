@@ -1,5 +1,9 @@
-#Multi-Layer Perceptron
-
+"""
+File name: multi_layer.py
+Project by: Haley Nolan and Umme Tanjuma Haque
+Purpose: Implements Multi-Layer Perceptron
+Date: 12/18/2020
+"""
 import nltk
 import string
 import re
@@ -16,6 +20,8 @@ from keras.optimizers import SGD
 from keras.layers import Dense, Embedding, Flatten, Dropout, LSTM
 from datetime import datetime
 
+#------preprocessing starts-----#
+#intializing the default dictionary of parts of speech with frequencies set as 0
 pos_dict = {'$': 0, 'CC': 0, 'CD': 0, 'DT': 0, 'EX': 0, 'FW': 0, 'IN': 0,
             'JJ': 0, 'JJR': 0, 'JJS': 0, 'LS': 0, 'MD': 0, 'NN': 0,
             'NNP': 0, 'NNPS': 0, 'NNS': 0, 'PDT': 0, 'POS': 0, 'PRP': 0,
@@ -42,6 +48,7 @@ tweets = []
 #Get Biden Tweets
 biden = open("JoeBidenTweets.csv", "r")
 
+#iterates through the file
 for line in biden:
     line = line.lower()
     #remove all links
@@ -97,6 +104,7 @@ num_trump = 0
 #Get Trump Tweets
 trump = open('realdonaldtrump.csv', 'r')
 
+#iterates through the file
 for line in trump:
     line = line.lower()
     #remove all links
@@ -148,6 +156,7 @@ for line in trump:
     num_trump += 1
     if num_trump >= num_biden:
         break
+#------preprocessing ends-----#
 
 #Input Setup
 random.seed(datetime.now())
@@ -171,28 +180,21 @@ y_train = np.array(y_train)
 x_test = np.array(x_test)
 y_test = np.array(y_test)
 
+print(x_train.shape, y_train.shape, x_test.shape, y_test.shape)
 #Model Creation
-epochs = 30
+epochs = 20 #or 30
 
 model = Sequential()
-for x in range(5, 0, -1):
-    model.add(Dense(x, activation='sigmoid'))
 
-# for x in range(10, 0, -1):
-#     model.add(Dense(1, activation='sigmoid'))
-
-# for x in range (10, 0, -1):
-#     model.add(Dense(x, activation='sigmoid'))
-#
-# for x in range (20, 0, -1):
-#     model.add(Dense(x, activation='sigmoid'))
-
-
-# model.add(Dense(5, activation='sigmoid'))
-# model.add(Dense(4, activation='sigmoid'))
-# model.add(Dense(3, activation='sigmoid'))
-# model.add(Dense(2, activation='sigmoid'))
+# model.add(Dense(5, activation='relu'))
+# model.add(Dense(4, activation='relu'))
+# model.add(Dense(3, activation='relu'))
+# model.add(Dense(2, activation='relu'))
 # model.add(Dense(1, activation='sigmoid'))
+
+for x in range(100, 0, -10):
+    model.add(Dense(x, activation='relu'))
+model.add(Dense(1, activation='sigmoid'))
 
 
 history = model.compile(loss='binary_crossentropy',
@@ -207,6 +209,7 @@ score, acc = model.evaluate(x_test, y_test, batch_size=128)
 print('Test score:', score)
 print('Test accuracy:', acc)
 
+#code for plotting graphs
 val_loss = history.history['val_loss']
 loss = history.history['loss']
 dic = {}

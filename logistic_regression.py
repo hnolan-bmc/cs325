@@ -1,4 +1,9 @@
-#Logistic Regression
+"""
+File name: logistic_regression.py
+Project by: Haley Nolan and Umme Tanjuma Haque
+Purpose: Implements Logistic Regression
+Date: 12/18/2020
+"""
 
 import nltk
 import string
@@ -16,6 +21,8 @@ from keras.models import Sequential
 from keras.optimizers import SGD
 from keras.layers import Dense
 
+#------preprocessing starts------#
+#intializing the default dictionary of parts of speech with frequencies set as 0
 pos_dict = {'$': 0, 'CC': 0, 'CD': 0, 'DT': 0, 'EX': 0, 'FW': 0, 'IN': 0,
             'JJ': 0, 'JJR': 0, 'JJS': 0, 'LS': 0, 'MD': 0, 'NN': 0,
             'NNP': 0, 'NNPS': 0, 'NNS': 0, 'PDT': 0, 'POS': 0, 'PRP': 0,
@@ -148,10 +155,11 @@ for line in trump:
     num_trump += 1
     if num_trump >= num_biden:
         break
+#-----preprocessing ends-----#
 
 #Input Setup
 random.seed(datetime.now())
-random.shuffle(tweets, ) #mix them up
+random.shuffle(tweets, )
 split = (int)(round((len(tweets)*0.7)))
 x_train = []
 y_train = []
@@ -190,6 +198,7 @@ score = model.evaluate(x_test, y_test, verbose=0)
 print('Test loss:', score[0])
 print('Test accuracy:', score[1])
 
+#code for graph plotting
 val_loss = history.history['val_loss']
 loss = history.history['loss']
 dic = {}

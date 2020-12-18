@@ -4,6 +4,7 @@ import nltk
 import string
 import re
 import random
+from datetime import datetime
 from collections import Counter
 import keras
 import numpy as np
@@ -143,7 +144,8 @@ for line in biden:
         tweets.append((line, 0, convert_pos(count_dict)))
 
 #Input Setup
-random.shuffle(tweets) #mix them up
+random.seed(datetime.now())
+random.shuffle(tweets, ) #mix them up
 split = (int)(round((len(tweets)*0.7)))
 x_train = []
 y_train = []
@@ -164,7 +166,7 @@ x_test = np.array(x_test)
 y_test = np.array(y_test)
 
 #Model Creation
-epochs = 30
+epochs = 50
 
 model = Sequential()
 model.add(Dense(1, activation='sigmoid'))
